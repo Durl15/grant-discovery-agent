@@ -1,0 +1,24 @@
+{
+  "organization": "Acme Research Institute",
+  "keywords": [
+    "machine learning",
+    "artificial intelligence",
+    "climate change",
+    "renewable energy",
+    "public health",
+    "data science",
+    "biotechnology",
+    "sustainability"
+  ],
+  "boost_keywords": [
+    "innovation",
+    "early career",
+    "community"
+  ],
+  "exclude_keywords": [
+    "defense",
+    "military"
+  ],
+  "max_amount": 500000,
+  "min_amount": 5000
+}

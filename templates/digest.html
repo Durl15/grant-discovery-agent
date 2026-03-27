@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grant Discovery Digest</title>
+  <style>
+    /* ------------------------------------------------------------------ */
+    /* Reset & base                                                         */
+    /* ------------------------------------------------------------------ */
+    *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
+    body {{
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                   Helvetica, Arial, sans-serif;
+      background-color: #f4f6f9;
+      color: #2d3748;
+      font-size: 15px;
+      line-height: 1.6;
+    }}
+
+    /* ------------------------------------------------------------------ */
+    /* Outer wrapper                                                        */
+    /* ------------------------------------------------------------------ */
+    .email-wrapper {{
+      max-width: 680px;
+      margin: 32px auto;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    }}
+
+    /* ------------------------------------------------------------------ */
+    /* Header                                                               */
+    /* ------------------------------------------------------------------ */
+    .header {{
+      background: linear-gradient(135deg, #1a56db 0%, #1e40af 100%);
+      padding: 36px 40px 28px;
+      text-align: center;
+    }}
+    .header-logo {{
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #bfdbfe;
+      margin-bottom: 8px;
+    }}
+    .header-title {{
+      font-size: 26px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }}
+    .header-subtitle {{
+      font-size: 13px;
+      color: #bfdbfe;
+    }}
+
+    /* ------------------------------------------------------------------ */
+    /* Summary bar                                                          */
+    /* ------------------------------------------------------------------ */
+    .summary-bar {{
+      background: #eff6ff;
+      border-bottom: 1px solid #dbeafe;
+      padding: 14px 40px;
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+    }}
+    .summary-item {{
+      font-size: 13px;
+      color: #3b82f6;
+      font-weight: 600;
+    }}
+    .summary-item span {{
+      color: #1e3a8a;
+    }}
+
+    /* ------------------------------------------------------------------ */
+    /* Body content                                                         */
+    /* ------------------------------------------------------------------ */
+    .content {{
+      padding: 32px 40px;
+    }}
+    .section-label {{
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 20px;
+    }}
+
+    /* ------------------------------------------------------------------ */
+    /* Grant card                                                           */
+    /* ------------------------------------------------------------------ */
+    .grant-card {{
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      overflow: hidden;
+      transition: box-shadow 0.15s ease;
+    }}
+    .grant-card:hover {{
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }}
+
+    .grant-card-header {{
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid #f3f4f6;
+      background: #fafafa;
+    }}
+    .rank-badge {{
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #1a56db;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }}
+    .grant-title {{
+      font-size: 15px;
+      font-weight: 700;
+      color: #111827;
+      flex: 1;
+      line-height: 1.4;
+    }}
+
+    .grant-meta {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 24px;
+      padding: 14px 20px;
+    }}
+    .meta-item {{
+      font-size: 13px;
+      color: #374151;
+    }}
+    .meta-label {{
+      font-weight: 600;
+      color: #6b7280;
+      margin-right: 4px;
+    }}
+
+    /* Score badge */
+    .score-badge {{
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }}
+    .score-high  {{ background: #d1fae5; color: #065f46; }}
+    .score-mid   {{ background: #fef9c3; color: #78350f; }}
+    .score-low   {{ background: #fee2e2; color: #991b1b; }}
+
+    /* Amount pill */
+    .amount-pill {{
+      display: inline-block;
+      background: #eff6ff;
+      color: #1e40af;
+      border-radius: 4px;
+      padding: 1px 7px;
+      font-size: 13px;
+      font-weight: 600;
+    }}
+
+    /* CTA link */
+    .grant-footer {{
+      padding: 12px 20px;
+      border-top: 1px solid #f3f4f6;
+      text-align: right;
+    }}
+    .cta-link {{
+      display: inline-block;
+      background: #1a56db;
+      color: #ffffff !important;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 6px;
+    }}
+    .cta-link:hover {{
+      background: #1e40af;
+    }}
+
+    /* ------------------------------------------------------------------ */
+    /* Table variant (single grant placeholder style)                       */
+    /* ------------------------------------------------------------------ */
+    .grants-table {{
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }}
+    .grants-table th {{
+      background: #1a56db;
+      color: #ffffff;
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }}
+    .grants-table td {{
+      padding: 10px 14px;
+      border-bottom: 1px solid #e5e7eb;
+      color: #374151;
+      vertical-align: top;
+    }}
+    .grants-table tr:last-child td {{
+      border-bottom: none;
+    }}
+    .grants-table tr:nth-child(even) td {{
+      background: #f9fafb;
+    }}
+
+    /* ------------------------------------------------------------------ */
+    /* Single-grant placeholder section                                     */
+    /* ------------------------------------------------------------------ */
+    .single-grant {{
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }}
+    .single-grant .field-row {{
+      display: flex;
+      gap: 12px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }}
+    .single-grant .field-key {{
+      min-width: 90px;
+      font-weight: 700;
+      color: #6b7280;
+    }}
+    .single-grant .field-val {{
+      color: #111827;
+      flex: 1;
+    }}
+
+    /* ------------------------------------------------------------------ */
+    /* Footer                                                               */
+    /* ------------------------------------------------------------------ */
+    .footer {{
+      background: #f9fafb;
+      border-top: 1px solid #e5e7eb;
+      padding: 24px 40px;
+      text-align: center;
+    }}
+    .footer p {{
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 4px;
+    }}
+    .footer a {{
+      color: #3b82f6;
+      text-decoration: none;
+    }}
+    .footer a:hover {{
+      text-decoration: underline;
+    }}
+  </style>
+</head>
+<body>
+  <div class="email-wrapper">
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- HEADER                                                           -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="header">
+      <div class="header-logo">Grant Discovery Agent</div>
+      <div class="header-title">Funding Opportunity Digest</div>
+      <div class="header-subtitle">{date} &nbsp;·&nbsp; {grant_count} opportunities matched your profile</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- SUMMARY BAR                                                      -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="summary-bar">
+      <div class="summary-item">Organization: <span>{organization}</span></div>
+      <div class="summary-item">Top Score: <span>{top_score}</span></div>
+      <div class="summary-item">Sources: <span>{sources}</span></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- GRANT CARDS                                                      -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="content">
+      <div class="section-label">Top Matching Grants</div>
+
+      <!--
+        SINGLE GRANT CARD TEMPLATE — repeat this block for each grant.
+        Replace the {{...}} placeholders with real values at render time.
+      -->
+      <div class="grant-card">
+        <div class="grant-card-header">
+          <div class="rank-badge">{rank}</div>
+          <div class="grant-title">{title}</div>
+        </div>
+
+        <div class="grant-meta">
+          <div class="meta-item">
+            <span class="meta-label">Score</span>
+            <span class="score-badge score-high">{score}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Agency</span>{agency}
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Amount</span>
+            <span class="amount-pill">{amount}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Deadline</span>{deadline}
+          </div>
+        </div>
+
+        <div class="grant-footer">
+          <a class="cta-link" href="{url}" target="_blank" rel="noopener noreferrer">
+            View Opportunity &rarr;
+          </a>
+        </div>
+      </div>
+      <!-- /grant-card -->
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- SUMMARY TABLE (all grants at a glance)                      -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div class="section-label" style="margin-top:32px;">Quick Reference Table</div>
+      <table class="grants-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Agency</th>
+            <th>Score</th>
+            <th>Amount</th>
+            <th>Deadline</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!--
+            TABLE ROW PLACEHOLDER — repeat for each grant:
+          -->
+          <tr>
+            <td>{rank}</td>
+            <td><a href="{url}" target="_blank" rel="noopener noreferrer">{title}</a></td>
+            <td>{agency}</td>
+            <td>{score}</td>
+            <td>{amount}</td>
+            <td>{deadline}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- FOOTER                                                           -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="footer">
+      <p>
+        Generated by
+        <a href="https://github.com/your-org/grant-discovery-agent">Grant Discovery Agent</a>
+        on {date}.
+      </p>
+      <p>
+        To update your profile, edit <code>data/profile.json</code> and
+        re-run <code>python run.py scan</code>.
+      </p>
+      <p style="margin-top:8px; color:#d1d5db;">
+        You received this digest because you configured grant-discovery-agent.
+        To stop, remove your NOTIFY_TO environment variable.
+      </p>
+    </div>
+
+  </div><!-- /email-wrapper -->
+</body>
+</html>

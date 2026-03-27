@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grant Discovery</title>
+  <style>
+    /* ── Reset ──────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue:    #1d4ed8;
+      --blue-lt: #eff6ff;
+      --green:   #059669;
+      --amber:   #d97706;
+      --red:     #dc2626;
+      --gray-50: #f8fafc;
+      --gray-100:#f1f5f9;
+      --gray-200:#e2e8f0;
+      --gray-400:#94a3b8;
+      --gray-600:#475569;
+      --gray-800:#1e293b;
+      --radius:  8px;
+      --shadow:  0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,.1);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--gray-100);
+      color: var(--gray-800);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Header ─────────────────────────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 60%, #2563eb 100%);
+      color: #fff;
+      padding: 28px 24px 24px;
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand-icon {
+      font-size: 36px;
+      background: rgba(255,255,255,.15);
+      border-radius: 12px;
+      width: 56px; height: 56px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .brand h1 { font-size: 22px; font-weight: 800; }
+    .brand p  { font-size: 13px; opacity: .75; margin-top: 2px; }
+
+    .header-stats { display: flex; gap: 24px; flex-wrap: wrap; }
+    .stat-item { text-align: center; }
+    .stat-item .val {
+      font-size: 24px; font-weight: 800; display: block; line-height: 1;
+    }
+    .stat-item .lbl {
+      font-size: 11px; opacity: .7; text-transform: uppercase; letter-spacing: 1px;
+    }
+
+    /* ── Toolbar ────────────────────────────────────────────────────── */
+    .toolbar {
+      background: #fff;
+      border-bottom: 1px solid var(--gray-200);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+    .toolbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    #search {
+      flex: 1;
+      min-width: 220px;
+      padding: 9px 14px 9px 38px;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      font-size: 14px;
+      background: var(--gray-50) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.415l-3.868-3.833zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E") 12px center no-repeat;
+      outline: none;
+      transition: border-color .15s;
+    }
+    #search:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(29,78,216,.1); }
+
+    .filter-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    select, .btn {
+      padding: 8px 12px;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      font-size: 13px;
+      background: #fff;
+      cursor: pointer;
+      outline: none;
+    }
+    select:focus { border-color: var(--blue); }
+
+    .score-wrap { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--gray-600); }
+    #score-filter { accent-color: var(--blue); cursor: pointer; width: 90px; }
+    #score-val { font-weight: 700; color: var(--blue); min-width: 28px; }
+
+    #source-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+    .src-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px;
+      border: 1px solid var(--gray-200);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      user-select: none;
+      background: #fff;
+      color: var(--gray-600);
+    }
+    .src-chip.active {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+    }
+
+    .result-count {
+      margin-left: auto;
+      font-size: 13px;
+      color: var(--gray-400);
+      white-space: nowrap;
+    }
+
+    /* ── Main grid ──────────────────────────────────────────────────── */
+    main {
+      max-width: 1200px;
+      margin: 28px auto;
+      padding: 0 24px;
+    }
+
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 18px;
+    }
+
+    /* ── Grant card ─────────────────────────────────────────────────── */
+    .card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow .2s, transform .2s;
+      overflow: hidden;
+    }
+    .card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+    .card-top {
+      padding: 16px 18px 12px;
+      border-bottom: 1px solid var(--gray-100);
+      flex: 1;
+    }
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .rank-badge {
+      flex-shrink: 0;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: #fff;
+      font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gray-800);
+      line-height: 1.4;
+    }
+    .card-title a { color: inherit; }
+    .card-title a:hover { color: var(--blue); text-decoration: none; }
+
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .pill-agency   { background: var(--gray-100); color: var(--gray-600); }
+    .pill-amount   { background: #d1fae5; color: #065f46; }
+    .pill-deadline { background: #fef3c7; color: #92400e; }
+    .pill-source   { background: #ede9fe; color: #5b21b6; }
+
+    .score-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 11px; font-weight: 700;
+    }
+    .score-badge::before {
+      content: '';
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .score-high { background: #d1fae5; color: #065f46; }
+    .score-high::before { background: #059669; }
+    .score-mid  { background: #fef9c3; color: #78350f; }
+    .score-mid::before  { background: #d97706; }
+    .score-low  { background: #fee2e2; color: #991b1b; }
+    .score-low::before  { background: #dc2626; }
+
+    .card-desc {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--gray-600);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-footer {
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .btn-view {
+      display: inline-block;
+      padding: 6px 14px;
+      background: var(--blue);
+      color: #fff;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      transition: background .15s;
+    }
+    .btn-view:hover { background: #1e40af; text-decoration: none; }
+
+    /* ── Empty / loading states ─────────────────────────────────────── */
+    .state-msg {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 64px 24px;
+      color: var(--gray-400);
+    }
+    .state-msg .icon { font-size: 48px; margin-bottom: 12px; }
+    .state-msg h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--gray-600); }
+    .state-msg p  { font-size: 14px; }
+
+    /* ── Footer ─────────────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      font-size: 12px;
+      color: var(--gray-400);
+      border-top: 1px solid var(--gray-200);
+      margin-top: 16px;
+    }
+    footer a { color: var(--gray-400); }
+    footer a:hover { color: var(--blue); }
+
+    /* ── Responsive ─────────────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      header { padding: 20px 16px; }
+      .header-inner { flex-direction: column; align-items: flex-start; }
+      .toolbar-inner { padding: 10px 16px; }
+      main { padding: 0 16px; margin: 20px auto; }
+      #grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ HEADER ══════════════════════════════ -->
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">🔍</div>
+      <div>
+        <h1>Grant Discovery</h1>
+        <p>AI-ranked funding opportunities</p>
+      </div>
+    </div>
+    <div class="header-stats" id="header-stats"></div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════ TOOLBAR ══════════════════════════════ -->
+<div class="toolbar">
+  <div class="toolbar-inner">
+    <input type="search" id="search" placeholder="Search title, agency, description…" autocomplete="off" />
+
+    <div class="filter-group" id="source-filters"></div>
+
+    <div class="score-wrap">
+      Min score
+      <input type="range" id="score-filter" min="0" max="1" step="0.05" value="0" />
+      <span id="score-val">0.0</span>
+    </div>
+
+    <select id="sort-select">
+      <option value="score">Score ↓</option>
+      <option value="amount_desc">Amount ↓</option>
+      <option value="amount_asc">Amount ↑</option>
+      <option value="deadline">Deadline</option>
+    </select>
+
+    <span class="result-count" id="result-count"></span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ MAIN ════════════════════════════════ -->
+<main>
+  <div id="grid">
+    <div class="state-msg">
+      <div class="icon">⏳</div>
+      <h2>Loading grants…</h2>
+      <p>Fetching the latest opportunities.</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Built with
+  <a href="https://github.com/your-org/grant-discovery-agent" target="_blank" rel="noopener">
+    Grant Discovery Agent
+  </a>
+  &nbsp;·&nbsp;
+  Data refreshed on each deploy
+  &nbsp;·&nbsp;
+  <span id="footer-date"></span>
+</footer>
+
+<!-- ═══════════════════════════ JS ══════════════════════════════════ -->
+<script>
+  // ── State ──────────────────────────────────────────────────────────
+  let allGrants = [];
+  let activeSources = new Set();
+  let allSources = [];
+
+  // ── Utilities ──────────────────────────────────────────────────────
+  function fmtAmount(v) {
+    if (v == null) return null;
+    const n = parseFloat(v);
+    if (isNaN(n)) return null;
+    if (n >= 1e6)  return `$${(n/1e6).toFixed(1)}M`;
+    if (n >= 1e3)  return `$${(n/1e3).toFixed(0)}K`;
+    return `$${n.toFixed(0)}`;
+  }
+
+  function scoreTier(s) {
+    return s >= 0.7 ? 'high' : s >= 0.4 ? 'mid' : 'low';
+  }
+
+  function esc(s) {
+    return String(s ?? '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function parseDateNum(s) {
+    if (!s) return Infinity;
+    const d = new Date(s);
+    return isNaN(d) ? Infinity : d.getTime();
+  }
+
+  // ── Render helpers ─────────────────────────────────────────────────
+  function buildCard(g, rank) {
+    const amount  = fmtAmount(g.amount_max) ?? fmtAmount(g.amount_min);
+    const tier    = scoreTier(g.score ?? 0);
+    const score   = (g.score ?? 0).toFixed(2);
+    const desc    = (g.description ?? '').slice(0, 260);
+    const url     = g.url || '#';
+    const agency  = g.agency || 'N/A';
+    const source  = g.source || '';
+    const deadline= g.deadline || '';
+
+    const amountPill  = amount   ? `<span class="pill pill-amount">${esc(amount)}</span>` : '';
+    const deadlinePill= deadline ? `<span class="pill pill-deadline">📅 ${esc(deadline)}</span>` : '';
+    const sourcePill  = source   ? `<span class="pill pill-source">${esc(source)}</span>` : '';
+
+    return `
+<div class="card">
+  <div class="card-top">
+    <div class="card-header">
+      <div class="rank-badge">${rank}</div>
+      <div class="card-title">
+        <a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(g.title ?? 'Untitled')}</a>
+      </div>
+    </div>
+    <div class="card-meta">
+      <span class="score-badge score-${tier}">${score}</span>
+      <span class="pill pill-agency">${esc(agency)}</span>
+      ${amountPill}
+      ${deadlinePill}
+      ${sourcePill}
+    </div>
+    ${desc ? `<div class="card-desc">${esc(desc)}</div>` : ''}
+  </div>
+  <div class="card-footer">
+    <a class="btn-view" href="${esc(url)}" target="_blank" rel="noopener noreferrer">
+      View Grant →
+    </a>
+  </div>
+</div>`;
+  }
+
+  function renderStats(grants) {
+    if (!grants.length) return;
+    const scores   = grants.map(g => g.score ?? 0);
+    const top      = Math.max(...scores).toFixed(2);
+    const avg      = (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(2);
+    const withAmt  = grants.filter(g => g.amount_max).length;
+    const srcs     = new Set(grants.map(g=>g.source)).size;
+
+    document.getElementById('header-stats').innerHTML = `
+      <div class="stat-item"><span class="val">${grants.length}</span><span class="lbl">Grants</span></div>
+      <div class="stat-item"><span class="val">${top}</span><span class="lbl">Top Score</span></div>
+      <div class="stat-item"><span class="val">${avg}</span><span class="lbl">Avg Score</span></div>
+      <div class="stat-item"><span class="val">${srcs}</span><span class="lbl">Sources</span></div>`;
+  }
+
+  function buildSourceFilters(grants) {
+    allSources = [...new Set(grants.map(g => g.source).filter(Boolean))].sort();
+    activeSources = new Set(allSources);          // all active by default
+
+    const container = document.getElementById('source-filters');
+    container.innerHTML = allSources.map(s => `
+      <span class="src-chip active" data-src="${esc(s)}">${esc(s)}</span>
+    `).join('');
+
+    container.querySelectorAll('.src-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const src = chip.dataset.src;
+        if (activeSources.has(src)) {
+          if (activeSources.size === 1) return;   // keep at least one
+          activeSources.delete(src);
+          chip.classList.remove('active');
+        } else {
+          activeSources.add(src);
+          chip.classList.add('active');
+        }
+        applyFilters();
+      });
+    });
+  }
+
+  // ── Filter + sort + render ─────────────────────────────────────────
+  function applyFilters() {
+    const query    = document.getElementById('search').value.toLowerCase().trim();
+    const minScore = parseFloat(document.getElementById('score-filter').value);
+    const sortBy   = document.getElementById('sort-select').value;
+
+    let filtered = allGrants.filter(g => {
+      if (!activeSources.has(g.source)) return false;
+      if ((g.score ?? 0) < minScore)    return false;
+      if (query) {
+        const haystack = [g.title, g.agency, g.description, g.source]
+          .join(' ').toLowerCase();
+        if (!haystack.includes(query)) return false;
+      }
+      return true;
+    });
+
+    filtered.sort((a, b) => {
+      if (sortBy === 'score')       return (b.score??0) - (a.score??0);
+      if (sortBy === 'amount_desc') return (b.amount_max??0) - (a.amount_max??0);
+      if (sortBy === 'amount_asc')  return (a.amount_max??0) - (b.amount_max??0);
+      if (sortBy === 'deadline')    return parseDateNum(a.deadline) - parseDateNum(b.deadline);
+      return 0;
+    });
+
+    const grid = document.getElementById('grid');
+    document.getElementById('result-count').textContent =
+      `${filtered.length} of ${allGrants.length}`;
+
+    if (!filtered.length) {
+      grid.innerHTML = `
+        <div class="state-msg">
+          <div class="icon">🔎</div>
+          <h2>No matches</h2>
+          <p>Try broadening your search or lowering the score filter.</p>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map((g, i) => buildCard(g, i + 1)).join('');
+  }
+
+  // ── Bootstrap ──────────────────────────────────────────────────────
+  async function init() {
+    // Wire up controls
+    document.getElementById('search').addEventListener('input', applyFilters);
+    document.getElementById('sort-select').addEventListener('change', applyFilters);
+    document.getElementById('score-filter').addEventListener('input', function() {
+      document.getElementById('score-val').textContent = parseFloat(this.value).toFixed(2);
+      applyFilters();
+    });
+
+    try {
+      const res = await fetch('data/grants.json');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      allGrants = data.grants ?? [];
+
+      // Footer date
+      if (data.exported_at) {
+        const d = new Date(data.exported_at);
+        document.getElementById('footer-date').textContent =
+          `Updated ${d.toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'})}`;
+      }
+
+      renderStats(allGrants);
+      buildSourceFilters(allGrants);
+      applyFilters();
+
+    } catch (err) {
+      document.getElementById('grid').innerHTML = `
+        <div class="state-msg">
+          <div class="icon">⚠️</div>
+          <h2>Could not load grants</h2>
+          <p>${esc(err.message)}</p>
+          <p style="margin-top:8px;font-size:12px;color:#94a3b8">
+            Run <code>python run.py scan</code> then
+            <code>python run.py share --format json --output public/data/grants.json</code>
+            to generate data.
+          </p>
+        </div>`;
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
